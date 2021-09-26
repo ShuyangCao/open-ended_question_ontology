@@ -23,7 +23,7 @@ For data preprocessing, please refer to the README in [data_preprocess](data_pre
 
 ### Run our models
 
-Our experiments are based on `PyTorch 1.7.0` and [Fairseq](https://github.com/pytorch/fairseq) at commit `0db28cd`. Newer versions of Fairseq might also work.
+Our experiments are based on `PyTorch 1.7.0` and [Fairseq](https://github.com/pytorch/fairseq) at commit `0db28cd`. Newer versions of Fairseq might also work. For graph neural networks, we use `PyTorch-Geometric 1.7.2`.
 
 Please download the generation models from [here](https://drive.google.com/drive/folders/1EpfamTiOosKvy_s9Bm_tW1NdtAzKpkY7?usp=sharing) 
 and put them under `$MODEL/generation_models`. The binarized dataset should be under `$DATA/binarized_data`.
@@ -68,8 +68,6 @@ cd gen_scripts
 cd gen_scripts
 ./tplgen_question_generation_9types.sh $DATA/output/tplgen_question_9types
 ```
-
-##### TplGen: conditioned on top 9 types
 
 ------
 

@@ -197,7 +197,7 @@ do
 done
 ```
 
-Predict question exemplars. Please download the exemplar prediction models from [here]()
+Predict question exemplars. Please download the exemplar prediction models from [here](https://drive.google.com/drive/folders/17rRXei80hhhM3KiITKKLc0Vns7ZxXQVC?usp=sharing)
 and put them under `$MODEL/prediction_models/exemplar_classifiers`.
 
 ```shell
@@ -287,7 +287,7 @@ fairseq-preprocess --source-lang source --target-lang target \
 ##### template->question data
 
 First obtain predicted focus from trained template generation model. 
-Download the template generation model from [here]() and put it under `$MODEL/generation_models/tplgen_template_generation`.
+Download the template generation model from [here](https://drive.google.com/drive/folders/1cppLYeVWpVYrrpMysJnnUhuKa-Q9_Tol?usp=sharing) and put it under `$MODEL/generation_models/tplgen_template_generation`.
 
 ```shell
 mkdir $DATA/predicted_focus
@@ -324,4 +324,93 @@ fairseq-preprocess --source-lang source --target-lang target \
   --workers 60 --srcdict dict.txt --tgtdict dict.txt
 ```
 
+Template generation.
+
+```shell
+cd ../gen_scripts
+./tplgen_template_generation.sh $DATA/output/tplgen_template
+cd ..
+python convert_output.py --generate-dir $DATA/output/tplgen_template
+
+mkdir -p $DATA/binarized_data/template_data/tplgen
+cp $DATA/output/tplgen_template/bpe-test.txt $DATA/binarized_data/template_data/tplgen/test.bpe.source
+cp $DATA/template_generation_data/oracle_raw/test.bpe.target $DATA/binarized_data/template_data/tplgen
+
+fairseq-preprocess --source-lang source --target-lang target \
+  --testpref $DATA/binarized_data/template_data/tplgen/test.bpe \
+  --destdir $DATA/binarized_data/template_data/tplgen \
+  --workers 60 --srcdict dict.txt --tgtdict dict.txt
+```
+
+##### Exemplar for 9 types
+
+Predict the top 9 types and corresponding exemplars.
+
+```shell
+python ../prediction_scripts/type_prediction_topk.py $MODEL/prediction_models/type_classifiers/answer_input/reddit \
+  $DATA/raw_text/test_answer.txt $DATA/control_types
+  
+mkdir -p $DATA/question_exemplar/control
+mkdir -p $DATA/exemplar_data/control
+mkdir -p $DATA/binarized_data/exemplar_data/control_exemplar
+for i in 1 2 3 4 5 6 7 8 9
+do
+  cp $DATA/control_types/control_type${i} $DATA/binarized_data/jointgen_data/test.control_type{i}
+  cp $DATA/control_types/control_type${i} $DATA/binarized_data/tplgen_data/test.control_type{i}
+  python ../prediction_scripts/exemplar_prediction.py $MODEL/prediction_models/exemplar_classifiers/reddit \
+    $DATA/focus_prediction_data/oracle_raw/test.bpe.source $DATA/control_types/control_type${i} \
+    $DATA/question_exemplar/control/control_type${i}
+  mkdir -p $DATA/exemplar_data/control/type${i}
+  python create_bpe_exemplar_data.py $DATA/question_exemplar/control/control_type${i} \
+    $DATA/control_types/control_type${i} exemplars/exemplar_bpe.txt \
+    $DATA/exemplar_data/control/type${i}/test.bpe.source
+  mkdir -p $DATA/binarized_data/exemplar_data/control_exemplar/type${i}
+  cp $DATA/exemplar_data/control/type${i}/* $DATA/binarized_data/exemplar_data/control_exemplar/type${i}
+  cp $DATA/template_generation_data/oracle_raw/test.bpe.target $DATA/binarized_data/exemplar_data/control_exemplar/type${i}
+  fairseq-preprocess --source-lang source --target-lang target \
+    --testpref $DATA/binarized_data/exemplar_data/control_exemplar/type${i}/test.bpe \
+    --destdir $DATA/binarized_data/exemplar_data/control_exemplar/type${i} \
+    --workers 60 --srcdict dict.txt --tgtdict dict.txt
+done
+```
+
+Predict focus for 9 types.
+
+```shell
+for i in 1 2 3 4 5 6 7 8 9
+do
+  mkdir -p $DATA/control_focus/type${i}
+  python ../prediction_scripts/joint_focus_node_prediction.py $DATA/binarized_data/tplgen_data \
+    --path $MODEL/generation_models/tplgen_template_generation/model.pt --user-dir ../fairseq_models/jointgen \
+    --task joint_generation --qt control_type${i} --gen-subset test \
+    --exemplar-data $DATA/binarized_data/exemplar_data/control_exemplar/type${i} --results-path $DATA/control_focus/type${i}/test.focus_prob
+  python create_predicted_focus_data.py $DATA/control_focus/type${i}/test.focus_prob \
+    $DATA/binarized_data/tplgen_data/test $DATA/question_focus/oracle/test.jsonl \
+    $DATA/stanford_parsing_output/test_answer_converted.jsonl $DATA/control_focus/type${i}/test
+  cp $DATA/template_generation_data/oracle_raw/${SPLIT}.bpe.target $DATA/control_focus/type${i}
+  fairseq-preprocess --source-lang source --target-lang target \
+    --testpref $DATA/control_focus/type${i}/test.bpe \
+    --destdir $DATA/binarized_data/focus_data/control_focus/type${i} \
+    --workers 60 --srcdict dict.txt --tgtdict dict.txt
+done
+```
+
+Template generation for 9 types.
+```shell
+cd ../gen_scripts
+./tplgen_template_generation_9types.sh $DATA/output/control_template
+cd ..
+python convert_output.py --generate-dir $DATA/output/tplgen_template/type*
+
+for i in 1 2 3 4 5 6 7 8 9
+do
+  mkdir -p $DATA/binarized_data/template_data/control_template/type${i}
+  cp $DATA/output/tplgen_template/type${i}/bpe-test.txt $DATA/binarized_data/template_data/control_template/type${i}/test.bpe.source
+  cp $DATA/template_generation_data/oracle_raw/test.bpe.target $DATA/binarized_data/template_data/control_template/type${i}
+  fairseq-preprocess --source-lang source --target-lang target \
+    --testpref $DATA/binarized_data/template_data/control_template/type${i}/test.bpe \
+    --destdir $DATA/binarized_data/template_data/control_template/type${i} \
+    --workers 60 --srcdict dict.txt --tgtdict dict.txt
+done
+```
 

@@ -387,7 +387,7 @@ do
   python create_predicted_focus_data.py $DATA/control_focus/type${i}/test.focus_prob \
     $DATA/binarized_data/tplgen_data/test $DATA/question_focus/oracle/test.jsonl \
     $DATA/stanford_parsing_output/test_answer_converted.jsonl $DATA/control_focus/type${i}/test
-  cp $DATA/template_generation_data/oracle_raw/${SPLIT}.bpe.target $DATA/control_focus/type${i}
+  cp $DATA/template_generation_data/oracle_raw/test.bpe.target $DATA/control_focus/type${i}
   fairseq-preprocess --source-lang source --target-lang target \
     --testpref $DATA/control_focus/type${i}/test.bpe \
     --destdir $DATA/binarized_data/focus_data/control_focus/type${i} \
@@ -400,12 +400,12 @@ Template generation for 9 types.
 cd ../gen_scripts
 ./tplgen_template_generation_9types.sh $DATA/output/control_template
 cd ..
-python convert_output.py --generate-dir $DATA/output/tplgen_template/type*
+python convert_output.py --generate-dir $DATA/output/control_template/type*
 
 for i in 1 2 3 4 5 6 7 8 9
 do
   mkdir -p $DATA/binarized_data/template_data/control_template/type${i}
-  cp $DATA/output/tplgen_template/type${i}/bpe-test.txt $DATA/binarized_data/template_data/control_template/type${i}/test.bpe.source
+  cp $DATA/output/control_template/type${i}/bpe-test.txt $DATA/binarized_data/template_data/control_template/type${i}/test.bpe.source
   cp $DATA/template_generation_data/oracle_raw/test.bpe.target $DATA/binarized_data/template_data/control_template/type${i}
   fairseq-preprocess --source-lang source --target-lang target \
     --testpref $DATA/binarized_data/template_data/control_template/type${i}/test.bpe \

@@ -26,7 +26,7 @@ def main():
 
         out_path = os.path.join(args.out_dir, f'{id}.question')
         with open(out_path, 'w') as f:
-            f.write(answer)
+            f.write(question)
         out_paths.append(out_path)
 
     with open(args.path_file, 'w') as f:

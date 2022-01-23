@@ -1,0 +1,3 @@
+[submodule "lib/fairseq"]
+	path = lib/fairseq
+	url = https://github.com/pytorch/fairseq.git

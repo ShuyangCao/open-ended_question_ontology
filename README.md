@@ -13,6 +13,34 @@ After obtaining the license for the L6 dataset,
 please email Shuyang (caoshuy@umich.edu) with the proof of license attached
 to obtain the Yahoo dataset.
 
+### Environment
+
+Our experiments are based on `PyTorch 1.7.0` and [Fairseq](https://github.com/pytorch/fairseq) at commit `0db28cd` with a simple edit. Newer versions of Fairseq might also work. For graph neural networks, we use `PyTorch-Geometric 1.7.2`.
+
+```shell
+# virtual environment
+conda create -n open_ended_qg python=3.7
+conda activate open_ended_qg
+
+# install pytorch
+conda install pytorch==1.7.0 torchvision==0.8.0 torchaudio==0.7.0 cudatoolkit=10.2 -c pytorch
+
+# install fairseq, note that you need to follow the instructions in fairseq/README.md 
+# to install other dependencies (e.g., apex for training)
+cd lib/fairseq
+pip install -e .
+# fix hydra error
+pip install hydra-core==1.0.7
+
+# install torch-geometric
+pip install torch-scatter==2.0.7 -f https://data.pyg.org/whl/torch-1.7.0+cu102.html
+pip install torch-sparse==0.6.9 -f https://data.pyg.org/whl/torch-1.7.0+cu102.html
+pip install torch-geometric==1.7.2
+```
+
+**Note:** we use AllenNLP during data processing, which requires a different PyTorch version.
+Please use a **different virtual environment for AllenNLP**. 
+
 ### Data Preprocess
 
 Preprocessed binarized Reddit data can be downloaded from [here](https://drive.google.com/drive/folders/1ceFL4mgm3CYBEvS8y4ScpcrvonoVXOhO?usp=sharing).
@@ -22,8 +50,6 @@ For data preprocessing, please refer to the README in [data_preprocess](data_pre
 ------
 
 ### Run our models
-
-Our experiments are based on `PyTorch 1.7.0` and [Fairseq](https://github.com/pytorch/fairseq) at commit `0db28cd`. Newer versions of Fairseq might also work. For graph neural networks, we use `PyTorch-Geometric 1.7.2`.
 
 Please download the generation models from [here](https://drive.google.com/drive/folders/1EpfamTiOosKvy_s9Bm_tW1NdtAzKpkY7?usp=sharing) 
 and put them under `$MODEL/generation_models`. The binarized dataset should be under `$DATA/binarized_data`.

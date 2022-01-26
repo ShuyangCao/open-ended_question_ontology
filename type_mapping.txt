@@ -1,0 +1,10 @@
+1: Verification
+2: Disjunctive
+3: Concept
+5: Extent
+7: Example
+8: Comparison
+9: Judgmental
+10: Cause
+11: Consequence
+13: Procedural

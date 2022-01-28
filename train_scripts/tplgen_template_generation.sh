@@ -16,7 +16,7 @@ fairseq-train $DATA_PATH \
     --save-dir $SAVE_PATH \
     --restore-file $BART_PATH --exemplar-data $EXEMPLAR_DATA_PATH \
     --max-tokens $MAX_TOKENS \
-    --task joint_generation --qt oracle_type --graph --improved-src-qt-10 \
+    --task joint_generation --qt oracle_type \
     --source-lang source --target-lang target \
     --truncate-source \
     --layernorm-embedding \
